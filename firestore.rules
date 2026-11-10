@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Görevler: herkes (giriş yapmış) okur, yalnızca yönetici yazar.
+    match /tasks/{taskId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // Kullanıcı profilleri: sıralama için ad ve etki herkese açık.
+    // Kullanıcı yalnızca adını ve yeteneklerini değiştirebilir; etki ve rolü değiştiremez.
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'skills', 'impactTotal', 'taskCount', 'createdAt'])
+        && request.resource.data.impactTotal == 0
+        && request.resource.data.taskCount == 0
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 60;
+      allow update: if (signedIn() && request.auth.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'skills']))
+        || (isAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['impactTotal', 'taskCount']));
+      // Kullanıcı hesabını silebilir (App Store kuralı).
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Görev üstlenme kayıtları. Belge kimliği: <uid>_<taskId>
+    match /claims/{claimId} {
+      allow read: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && claimId == request.auth.uid + '_' + request.resource.data.taskId
+        && request.resource.data.status == 'claimed'
+        && !('impact' in request.resource.data)
+        && exists(/databases/$(database)/documents/tasks/$(request.resource.data.taskId));
+
+      // Sahibi: üstlenilmiş görevi teslim edebilir (yalnızca durum, bağlantı, tarih).
+      allow update: if (signedIn() && resource.data.uid == request.auth.uid
+          && resource.data.status == 'claimed'
+          && request.resource.data.status == 'submitted'
+          && request.resource.data.link is string
+          && request.resource.data.link.size() < 500
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'link', 'submittedAt']))
+        // Yönetici: onaylar veya geri gönderir.
+        || (isAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'impact', 'story', 'approvedAt']));
+
+      // Sahibi kaydını silebilir (görevden vazgeçme ya da hesap silme).
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+  }
+}
