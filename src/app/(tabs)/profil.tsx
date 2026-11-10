@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useAppData } from '@/lib/app-data';
 import { deleteAccount, updateSkills, useLeaderboard } from '@/lib/data';
 import { computeBadges, formatNumber, summarize } from '@/lib/impact';
-import { SKILL_TAGS } from '@/lib/types';
+import { CATEGORIES, SKILL_TAGS } from '@/lib/types';
 import { Avatar, Button, Card, Chip, HexBadge, Screen, T } from '@/components/ui';
 import { colors, radius } from '@/theme';
 
@@ -31,6 +31,7 @@ export default function Profil() {
   const badges = computeBadges(claims);
   const [skills, setSkills] = useState<string[]>(profile?.skills ?? []);
   const [saveError, setSaveError] = useState('');
+  const [editSkills, setEditSkills] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
@@ -106,17 +107,38 @@ export default function Profil() {
       <Card>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
           <T w="extrabold" size={16}>
-            Yeteneklerin
+            Yeteneklerin ({skills.length})
           </T>
           <T w="semibold" size={12} color={colors.muted}>
-            Dokun, eşleşmeyi güncelle
+            Eşleşmeler buna göre yapılır
           </T>
         </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          {SKILL_TAGS.map((t) => (
-            <Chip key={t.tag} label={t.tag} active={skills.includes(t.tag)} onPress={() => toggle(t.tag)} dashed />
-          ))}
-        </View>
+        {editSkills ? (
+          CATEGORIES.map((c) => (
+            <View key={c.id} style={{ gap: 8 }}>
+              <T w="bold" size={13} color={colors.text}>
+                {c.label}
+              </T>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                {SKILL_TAGS.filter((t) => t.category === c.id).map((t) => (
+                  <Chip key={t.tag} label={t.tag} active={skills.includes(t.tag)} onPress={() => toggle(t.tag)} dashed />
+                ))}
+              </View>
+            </View>
+          ))
+        ) : (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {skills.map((tag) => (
+              <Chip key={tag} label={tag} active onPress={() => toggle(tag)} dashed />
+            ))}
+          </View>
+        )}
+        <Button
+          label={editSkills ? 'Tamam' : 'Yetenek ekle / düzenle'}
+          variant="outline"
+          icon={editSkills ? 'check' : 'plus'}
+          onPress={() => setEditSkills(!editSkills)}
+        />
         {saveError ? (
           <T w="semibold" size={13} color={colors.redDark}>
             {saveError}

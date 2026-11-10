@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useAppData } from '@/lib/app-data';
 import { addTask, approveClaim, rejectClaim, seedTasks, usePendingClaims } from '@/lib/data';
 import { formatNumber } from '@/lib/impact';
-import { CATEGORIES, CAUSES, type Category, type Cause, type Claim } from '@/lib/types';
+import { CATEGORIES, CAUSES, type Category, type Cause, type Claim, type TaskMode } from '@/lib/types';
 import { Icon } from '@/components/Icon';
 import { Button, Card, Chip, Empty, Field, Pill, Screen, T } from '@/components/ui';
 import { colors } from '@/theme';
@@ -37,7 +37,12 @@ function PendingCard({ claim, defaultImpact }: { claim: Claim; defaultImpact: nu
       <T size={13} color={colors.muted}>
         Gönüllü: {claim.userName}
       </T>
-      {claim.link ? (
+      {claim.link && !/^https?:\/\//.test(claim.link) ? (
+        <T size={13} color={colors.text} style={{ lineHeight: 19 }}>
+          Katılım notu: {claim.link}
+        </T>
+      ) : null}
+      {claim.link && /^https?:\/\//.test(claim.link) ? (
         <Pressable onPress={() => Linking.openURL(claim.link!)} accessibilityRole="link" style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
           <Icon name="link" size={16} color={colors.red} strokeWidth={2} />
           <T w="bold" size={13} color={colors.redDark} numberOfLines={1} style={{ flex: 1 }}>
@@ -69,7 +74,10 @@ function NewTaskForm() {
   const [title, setTitle] = useState('');
   const [org, setOrg] = useState('');
   const [city, setCity] = useState('');
-  const [category, setCategory] = useState<Category>('tasarim');
+  const [category, setCategory] = useState<Category>('egitim');
+  const [mode, setMode] = useState<TaskMode>('uzaktan');
+  const [place, setPlace] = useState('');
+  const [when, setWhen] = useState('');
   const [cause, setCause] = useState<Cause>('Eğitim');
   const [minutes, setMinutes] = useState('30');
   const [impactText, setImpactText] = useState('');
@@ -91,8 +99,10 @@ function NewTaskForm() {
       await addTask({
         title: title.trim(),
         org: org.trim(),
-        city: city.trim() || 'Uzaktan',
+        city: city.trim() || (mode === 'yerinde' ? 'Belirtilmedi' : 'Uzaktan'),
         category,
+        mode,
+        ...(mode === 'yerinde' ? { place: place.trim(), when: when.trim() } : {}),
         cause,
         minutes: parseInt(minutes, 10),
         impactText: impactText.trim(),
@@ -104,6 +114,8 @@ function NewTaskForm() {
       setImpactText('');
       setImpactCount('');
       setSteps('');
+      setPlace('');
+      setWhen('');
       setMsg('Görev yayınlandı.');
     } catch {
       setMsg('Kaydedilemedi.');
@@ -121,6 +133,19 @@ function NewTaskForm() {
       <Field label="Kurum" value={org} onChangeText={setOrg} />
       <Field label="Şehir" value={city} onChangeText={setCity} />
       <T w="semibold" size={13} color={colors.text}>
+        Görev nerede yapılacak?
+      </T>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Chip label="Uzaktan (online)" active={mode === 'uzaktan'} onPress={() => setMode('uzaktan')} />
+        <Chip label="Yerinde (sahada)" active={mode === 'yerinde'} onPress={() => setMode('yerinde')} />
+      </View>
+      {mode === 'yerinde' ? (
+        <>
+          <Field label="Adres / buluşma noktası" value={place} onChangeText={setPlace} placeholder="Örn. Kadıköy Belediyesi önü" />
+          <Field label="Tarih ve saat" value={when} onChangeText={setWhen} placeholder="Örn. 16 Kasım Cmt, 10:00–13:00" />
+        </>
+      ) : null}
+      <T w="semibold" size={13} color={colors.text}>
         Yetenek alanı
       </T>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -136,7 +161,7 @@ function NewTaskForm() {
           <Chip key={c} label={c} active={cause === c} onPress={() => setCause(c)} />
         ))}
       </View>
-      <Field label="Süre (dakika)" value={minutes} onChangeText={setMinutes} keyboardType="number-pad" />
+      <Field label="Süre (dakika, yerinde görevlerde toplam süre)" value={minutes} onChangeText={setMinutes} keyboardType="number-pad" />
       <Field label="Etki cümlesi" value={impactText} onChangeText={setImpactText} placeholder="Örn. 60 hayvan daha hızlı yuva bulacak" />
       <Field label="Beklenen kişi sayısı" value={impactCount} onChangeText={setImpactCount} keyboardType="number-pad" />
       <Field label="Adımlar (her satıra bir adım)" value={steps} onChangeText={setSteps} multiline style={{ minHeight: 100, textAlignVertical: 'top' }} />

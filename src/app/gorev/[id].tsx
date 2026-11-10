@@ -56,6 +56,9 @@ export default function GorevDetay() {
   }
 
   const status = claim?.status;
+  const onSite = task.mode === 'yerinde';
+  const duration = task.minutes >= 120 ? `${Math.round(task.minutes / 60)} sa` : `${task.minutes} dk`;
+  const canSubmit = onSite ? link.trim().length >= 3 : isUrl(link);
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -108,8 +111,8 @@ export default function GorevDetay() {
         <View style={{ padding: 20, gap: 16, width: '100%', maxWidth: 560, alignSelf: 'center' }}>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             {[
-              ['Süre', `${task.minutes} dk`],
-              ['Yer', 'Uzaktan'],
+              ['Süre', duration],
+              ['Yer', onSite ? task.city : 'Uzaktan'],
               ['Ulaşacak', `${formatNumber(task.impactCount)} kişi`],
             ].map(([label, value]) => (
               <View key={label} style={{ flex: 1, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, padding: 12, gap: 2 }}>
@@ -122,6 +125,27 @@ export default function GorevDetay() {
               </View>
             ))}
           </View>
+
+          {onSite && (task.place || task.when) ? (
+            <Card style={{ gap: 8 }}>
+              {task.when ? (
+                <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                  <Icon name="clock" size={18} color={colors.red} strokeWidth={2} />
+                  <T w="bold" size={14} style={{ flex: 1 }}>
+                    {task.when}
+                  </T>
+                </View>
+              ) : null}
+              {task.place ? (
+                <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                  <Icon name="pin" size={18} color={colors.red} strokeWidth={2} />
+                  <T w="bold" size={14} style={{ flex: 1 }}>
+                    {task.place}
+                  </T>
+                </View>
+              ) : null}
+            </Card>
+          ) : null}
 
           <Card dark>
             <T w="bold" size={12} color={colors.redOnDark} style={{ letterSpacing: 0.8 }}>
@@ -153,16 +177,22 @@ export default function GorevDetay() {
           {status === 'claimed' || status === 'rejected' ? (
             <Card>
               <T w="extrabold" size={16}>
-                Teslim et
+                {onSite ? 'Katılımını bildir' : 'Teslim et'}
               </T>
               <T size={13} color={colors.muted} style={{ lineHeight: 19 }}>
-                Çalışmanı Google Drive, Figma, GitHub ya da benzeri bir yere yükleyip paylaşım bağlantısını buraya yapıştır. Kurum onaylayınca etkin profiline işlenir.
+                {onSite
+                  ? 'Göreve katıldıktan sonra kısa bir not yaz (örn. "3 saat dağıtımdaydım, 40 koli hazırladık"). Kurum katılımını onaylayınca etkin profiline işlenir.'
+                  : 'Çalışmanı Google Drive, Figma, GitHub ya da benzeri bir yere yükleyip paylaşım bağlantısını buraya yapıştır. Kurum onaylayınca etkin profiline işlenir.'}
               </T>
-              <Field label="Bağlantı" value={link} onChangeText={setLink} placeholder="https://" autoCapitalize="none" keyboardType="url" />
+              {onSite ? (
+                <Field label="Katılım notu" value={link} onChangeText={setLink} placeholder="Ne yaptın?" multiline maxLength={400} style={{ minHeight: 80, textAlignVertical: 'top' }} />
+              ) : (
+                <Field label="Bağlantı" value={link} onChangeText={setLink} placeholder="https://" autoCapitalize="none" keyboardType="url" />
+              )}
               <Button
-                label="Teslim et"
+                label={onSite ? 'Katıldım' : 'Teslim et'}
                 icon="check"
-                disabled={!isUrl(link)}
+                disabled={!canSubmit}
                 loading={busy}
                 onPress={() => run(() => submitTask(profile.uid, task.id, link.trim()))}
               />

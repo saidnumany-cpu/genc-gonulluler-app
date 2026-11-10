@@ -13,6 +13,7 @@ const statusText: Record<ClaimStatus, string> = {
 };
 
 export function TaskCard({ task, matched, status }: { task: Task; matched: boolean; status?: ClaimStatus }) {
+  const onSite = task.mode === 'yerinde';
   return (
     <Pressable
       accessibilityRole="link"
@@ -53,17 +54,17 @@ export function TaskCard({ task, matched, status }: { task: Task; matched: boole
         </T>
       </View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <View style={{ flexDirection: 'row', gap: 14 }}>
+        <View style={{ flexDirection: 'row', gap: 14, flex: 1, flexWrap: 'wrap' }}>
           <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
             <Icon name="clock" size={15} color={colors.muted} strokeWidth={2} />
             <T w="semibold" size={13} color={colors.muted}>
-              {task.minutes} dk
+              {task.minutes >= 120 ? `${Math.round(task.minutes / 60)} sa` : `${task.minutes} dk`}
             </T>
           </View>
           <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-            <Icon name="laptop" size={15} color={colors.muted} strokeWidth={2} />
+            <Icon name={onSite ? 'pin' : 'laptop'} size={15} color={colors.muted} strokeWidth={2} />
             <T w="semibold" size={13} color={colors.muted}>
-              Uzaktan
+              {onSite ? task.when || 'Yerinde' : 'Uzaktan'}
             </T>
           </View>
         </View>

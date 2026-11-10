@@ -1,8 +1,10 @@
+import type { Category } from '@/lib/types';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 export type IconName =
   | 'home' | 'tasks' | 'heart' | 'user' | 'bell' | 'arrow' | 'back' | 'clock' | 'laptop' | 'search'
-  | 'pen' | 'code' | 'camera' | 'chat' | 'star' | 'leaf' | 'bolt' | 'check' | 'share' | 'link' | 'logout' | 'shield' | 'plus';
+  | 'pen' | 'code' | 'camera' | 'chat' | 'star' | 'leaf' | 'bolt' | 'check' | 'share' | 'link' | 'logout' | 'shield' | 'plus'
+  | 'book' | 'medkit' | 'users' | 'pin' | 'music' | 'briefcase' | 'globe';
 
 interface Props {
   name: IconName;
@@ -72,8 +74,59 @@ export function Icon({ name, size = 22, color, filled = false, strokeWidth = 1.9
       {name === 'logout' && <Path {...s} d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />}
       {name === 'shield' && <Path {...s} d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />}
       {name === 'plus' && <Path {...s} d="M12 5v14M5 12h14" />}
+      {name === 'book' && <Path {...s} d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14zM4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5" />}
+      {name === 'medkit' && (
+        <>
+          <Rect {...s} x={3} y={7} width={18} height={14} rx={2} />
+          <Path {...s} d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M12 11v6M9 14h6" />
+        </>
+      )}
+      {name === 'users' && (
+        <>
+          <Circle {...s} cx={9} cy={8} r={3.5} />
+          <Path {...s} d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14.3c2.1.7 3.5 2.8 3.5 5.7" />
+        </>
+      )}
+      {name === 'pin' && (
+        <>
+          <Path {...s} d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" />
+          <Circle {...s} cx={12} cy={10} r={2.5} />
+        </>
+      )}
+      {name === 'music' && (
+        <>
+          <Path {...s} d="M9 18V5l12-2v13" />
+          <Circle {...s} cx={6} cy={18} r={3} />
+          <Circle {...s} cx={18} cy={16} r={3} />
+        </>
+      )}
+      {name === 'briefcase' && (
+        <>
+          <Rect {...s} x={2} y={7} width={20} height={14} rx={2} />
+          <Path {...s} d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2M2 13h20" />
+        </>
+      )}
+      {name === 'globe' && (
+        <>
+          <Circle {...s} cx={12} cy={12} r={9.5} />
+          <Path {...s} d="M2.5 12h19M12 2.5c2.5 2.6 3.8 5.8 3.8 9.5s-1.3 6.9-3.8 9.5c-2.5-2.6-3.8-5.8-3.8-9.5s1.3-6.9 3.8-9.5z" />
+        </>
+      )}
     </Svg>
   );
 }
 
-export const categoryIcon = { tasarim: 'pen', kodlama: 'code', fotograf: 'camera', iletisim: 'chat' } as const;
+export const categoryIcon: Record<Category, IconName> = {
+  tasarim: 'pen',
+  kodlama: 'code',
+  fotograf: 'camera',
+  iletisim: 'chat',
+  egitim: 'book',
+  saglik: 'medkit',
+  cevre: 'leaf',
+  saha: 'pin',
+  sosyal: 'users',
+  sanat: 'music',
+  uzmanlik: 'briefcase',
+  dil: 'globe',
+};

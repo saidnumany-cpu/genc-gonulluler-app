@@ -35,7 +35,7 @@ export const startOfMonth = () => {
 
 export const formatNumber = (n: number) => n.toLocaleString('tr-TR');
 
-export type BadgeIcon = 'star' | 'pen' | 'code' | 'leaf' | 'heart' | 'bolt' | 'camera' | 'chat';
+export type BadgeIcon = 'star' | 'pen' | 'code' | 'leaf' | 'heart' | 'bolt' | 'camera' | 'chat' | 'book' | 'users' | 'pin';
 
 export interface Badge {
   id: string;
@@ -52,6 +52,9 @@ export function computeBadges(claims: Claim[]): Badge[] {
   const cat = (k: string) => done.filter((c) => c.category === k).length;
   return [
     { id: 'ilk', name: 'İlk Etki', hint: 'İlk görevini tamamla', icon: 'star', earned: done.length >= 1, tone: 'red' },
+    { id: 'bilgi', name: 'Bilgi Elçisi', hint: '3 eğitim görevi', icon: 'book', earned: cat('egitim') >= 3, tone: 'ink' },
+    { id: 'gonul', name: 'Gönül Köprüsü', hint: '3 sosyal destek/sağlık görevi', icon: 'users', earned: cat('sosyal') + cat('saglik') >= 3, tone: 'red' },
+    { id: 'saha', name: 'Saha Kahramanı', hint: '3 saha görevi', icon: 'pin', earned: cat('saha') >= 3, tone: 'ink' },
     { id: 'piksel', name: 'Piksel Kahramanı', hint: '3 tasarım görevi', icon: 'pen', earned: cat('tasarim') >= 3, tone: 'ink' },
     { id: 'kod', name: 'Kod Elçisi', hint: '3 kodlama görevi', icon: 'code', earned: cat('kodlama') >= 3, tone: 'ink' },
     { id: 'kare', name: 'Kadraj Ustası', hint: '3 fotoğraf/video görevi', icon: 'camera', earned: cat('fotograf') >= 3, tone: 'ink' },

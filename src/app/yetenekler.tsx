@@ -40,7 +40,7 @@ export default function Yetenekler() {
         </T>
         <Squiggle />
         <T size={15} color={colors.muted} style={{ lineHeight: 22 }}>
-          Seçtiğin yeteneklere göre sana uygun mikro görevleri eşleştireceğiz. Sonradan profilinden değiştirebilirsin.
+          Dijitalden sahaya, bildiğin her şey birine iyi gelir. Seçtiğin yeteneklere göre sana uygun görevleri eşleştireceğiz; sonradan profilinden değiştirebilirsin.
         </T>
       </View>
 
