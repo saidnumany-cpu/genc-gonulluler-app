@@ -19,15 +19,22 @@ export function TaskCard({ task, matched, status }: { task: Task; matched: boole
       accessibilityRole="link"
       accessibilityLabel={`${task.title}, ${task.org}`}
       onPress={() => router.push({ pathname: '/gorev/[id]', params: { id: task.id } })}
-      style={({ pressed }) => ({
-        backgroundColor: colors.card,
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: radius.lg,
-        padding: 18,
-        gap: 12,
-        opacity: pressed ? 0.9 : 1,
-      })}
+      style={(state) => {
+        // react-native-web, fare üzerine gelince `hovered` bilgisini de verir.
+        const hovered = (state as { hovered?: boolean }).hovered;
+        return {
+          flexGrow: 1,
+          backgroundColor: colors.card,
+          borderWidth: 1,
+          borderColor: hovered ? colors.borderStrong : colors.border,
+          borderRadius: radius.lg,
+          padding: 18,
+          gap: 12,
+          opacity: state.pressed ? 0.9 : 1,
+          boxShadow: hovered ? '0 10px 28px rgba(22,22,26,0.08)' : undefined,
+          transform: hovered ? [{ translateY: -2 }] : undefined,
+        };
+      }}
     >
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Pill label={categoryLabel(task.category)} />
@@ -53,7 +60,7 @@ export function TaskCard({ task, matched, status }: { task: Task; matched: boole
           {task.impactText}
         </T>
       </View>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
         <View style={{ flexDirection: 'row', gap: 14, flex: 1, flexWrap: 'wrap' }}>
           <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
             <Icon name="clock" size={15} color={colors.muted} strokeWidth={2} />
