@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { Children, type ReactNode } from 'react';
+import { useLayout } from '@/lib/use-layout';
 import {
   ActivityIndicator,
   Pressable,
@@ -30,25 +31,62 @@ export function T({
   return <Text {...rest} style={[{ fontFamily: fonts[w], fontSize: size, color }, style]} />;
 }
 
-export function Screen({ children, padTop = true }: { children: ReactNode; padTop?: boolean }) {
+/**
+ * Sayfa kabı. Telefonda tek sütun (560px); bilgisayarda daha geniş ve ferah.
+ * `wide`: liste/pano sayfaları (1120px). Varsayılan bilgisayar genişliği 760px (okuma/form sayfaları).
+ */
+export function Screen({
+  children,
+  padTop = true,
+  wide,
+  maxWidth,
+}: {
+  children: ReactNode;
+  padTop?: boolean;
+  wide?: boolean;
+  maxWidth?: number;
+}) {
   const insets = useSafeAreaInsets();
+  const { isDesktop } = useLayout();
+  const width = maxWidth ?? (isDesktop ? (wide ? 1120 : 760) : 560);
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: colors.bg }}
       contentContainerStyle={{
-        paddingTop: padTop ? insets.top + 16 : 0,
-        paddingBottom: 32,
-        paddingHorizontal: padTop ? 20 : 0,
-        gap: 20,
+        paddingTop: padTop ? insets.top + (isDesktop ? 40 : 16) : 0,
+        paddingBottom: isDesktop ? 56 : 32,
+        paddingHorizontal: padTop ? (isDesktop ? 40 : 20) : 0,
+        gap: isDesktop ? 24 : 20,
         width: '100%',
-        maxWidth: 560,
+        maxWidth: width + (padTop && isDesktop ? 80 : padTop ? 40 : 0),
         alignSelf: 'center',
       }}
-      showsVerticalScrollIndicator={false}
+      showsVerticalScrollIndicator={isDesktop}
       keyboardShouldPersistTaps="handled"
     >
       {children}
     </ScrollView>
+  );
+}
+
+/** Kartları sütunlara dizer. Telefonda tek sütun; son satır boş hücrelerle hizalanır. */
+export function Grid({ children, columns = 1, gap = 12 }: { children: ReactNode; columns?: number; gap?: number }) {
+  const items = Children.toArray(children);
+  if (columns <= 1) return <View style={{ gap }}>{items}</View>;
+  const rows: ReactNode[][] = [];
+  for (let i = 0; i < items.length; i += columns) rows.push(items.slice(i, i + columns));
+  return (
+    <View style={{ gap }}>
+      {rows.map((row, r) => (
+        <View key={r} style={{ flexDirection: 'row', gap, alignItems: 'stretch' }}>
+          {Array.from({ length: columns }, (_, c) => (
+            <View key={c} style={{ flex: 1, minWidth: 0 }}>
+              {row[c] ?? null}
+            </View>
+          ))}
+        </View>
+      ))}
+    </View>
   );
 }
 

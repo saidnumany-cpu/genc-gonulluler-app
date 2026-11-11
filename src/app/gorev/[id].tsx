@@ -9,6 +9,7 @@ import { formatNumber } from '@/lib/impact';
 import { categoryLabel } from '@/lib/types';
 import { Icon } from '@/components/Icon';
 import { Button, Card, Empty, Field, Pill, T } from '@/components/ui';
+import { useLayout } from '@/lib/use-layout';
 import { colors, radius } from '@/theme';
 
 const initials = (s: string) =>
@@ -24,6 +25,8 @@ const isUrl = (s: string) => /^https?:\/\/\S+\.\S+/.test(s.trim());
 export default function GorevDetay() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
+  const { isDesktop } = useLayout();
+  const contentWidth = isDesktop ? 760 : 560;
   const { profile } = useAuth();
   const { tasks, claimByTask, isMatch } = useAppData();
   const task = tasks.find((t) => t.id === id);
@@ -66,9 +69,9 @@ export default function GorevDetay() {
         <View
           style={{
             backgroundColor: colors.red,
-            paddingTop: insets.top + 12,
-            paddingHorizontal: 20,
-            paddingBottom: 28,
+            paddingTop: insets.top + (isDesktop ? 28 : 12),
+            paddingHorizontal: isDesktop ? 40 : 20,
+            paddingBottom: isDesktop ? 40 : 28,
             borderBottomLeftRadius: 32,
             borderBottomRightRadius: 32,
             gap: 14,
@@ -76,6 +79,7 @@ export default function GorevDetay() {
           }}
         >
           <View style={{ position: 'absolute', right: -90, bottom: -110, width: 260, height: 260, borderRadius: 130, borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)' }} />
+          <View style={{ gap: 14, width: '100%', maxWidth: contentWidth, alignSelf: 'center' }}>
           <Pressable
             onPress={back}
             accessibilityRole="button"
@@ -88,7 +92,7 @@ export default function GorevDetay() {
             <Pill label={categoryLabel(task.category)} tone="white" />
             {isMatch(task) ? <Pill label="Yeteneğine uygun" tone="glass" /> : null}
           </View>
-          <T w="extrabold" size={25} color={colors.white} style={{ letterSpacing: -0.7, lineHeight: 31 }} accessibilityRole="header">
+          <T w="extrabold" size={isDesktop ? 32 : 25} color={colors.white} style={{ letterSpacing: -0.7, lineHeight: isDesktop ? 38 : 31 }} accessibilityRole="header">
             {task.title}
           </T>
           <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
@@ -106,9 +110,10 @@ export default function GorevDetay() {
               </T>
             </View>
           </View>
+          </View>
         </View>
 
-        <View style={{ padding: 20, gap: 16, width: '100%', maxWidth: 560, alignSelf: 'center' }}>
+        <View style={{ padding: 20, paddingTop: isDesktop ? 28 : 20, gap: 16, width: '100%', maxWidth: contentWidth + 40, alignSelf: 'center' }}>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             {[
               ['Süre', duration],
@@ -236,11 +241,13 @@ export default function GorevDetay() {
 
       {!status || status === 'claimed' ? (
         <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: insets.bottom + 14, backgroundColor: colors.white, borderTopWidth: 1, borderTopColor: colors.border }}>
-          {!status ? (
-            <Button label="Görevi üstlen" icon="arrow" loading={busy} onPress={() => run(() => claimTask(profile, task))} />
-          ) : (
-            <Button label="Vazgeç" variant="outline" loading={busy} onPress={() => run(() => unclaimTask(profile.uid, task.id))} />
-          )}
+          <View style={{ width: '100%', maxWidth: contentWidth, alignSelf: 'center', alignItems: isDesktop ? 'flex-end' : 'stretch' }}>
+            {!status ? (
+              <Button label="Görevi üstlen" icon="arrow" loading={busy} onPress={() => run(() => claimTask(profile, task))} style={isDesktop ? { minWidth: 260 } : undefined} />
+            ) : (
+              <Button label="Vazgeç" variant="outline" loading={busy} onPress={() => run(() => unclaimTask(profile.uid, task.id))} style={isDesktop ? { minWidth: 260 } : undefined} />
+            )}
+          </View>
         </View>
       ) : null}
     </KeyboardAvoidingView>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
@@ -10,6 +10,7 @@ import { auth } from '@/lib/firebase';
 import { createProfile } from '@/lib/data';
 import { Button, Field, Screen, Squiggle, T } from '@/components/ui';
 import { colors } from '@/theme';
+import { useLayout } from '@/lib/use-layout';
 
 const errorText = (code: string) =>
   ({
@@ -28,6 +29,7 @@ export default function Giris() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { isDesktop } = useLayout();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ text: string; ok?: boolean } | null>(null);
 
@@ -66,31 +68,7 @@ export default function Giris() {
     }
   }
 
-  return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Screen>
-        <View style={{ gap: 18, paddingTop: 28 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: colors.red, alignItems: 'center', justifyContent: 'center' }}>
-              <T w="extrabold" size={18} color={colors.white}>
-                GG
-              </T>
-            </View>
-            <T w="extrabold" size={20} style={{ lineHeight: 22 }}>
-              Genç{'\n'}Gönüllüler
-            </T>
-          </View>
-          <View style={{ gap: 8 }}>
-            <T w="extrabold" size={30} style={{ letterSpacing: -0.9, lineHeight: 36 }}>
-              Küçük adımlar,{'\n'}büyük etkiler.
-            </T>
-            <Squiggle />
-            <T size={15} color={colors.muted} style={{ lineHeight: 22 }}>
-              Tasarım, kod, fotoğraf ya da kelimeler: yeteneğinle 15–60 dakikalık görevler yap, dokunduğun hayatları gör.
-            </T>
-          </View>
-        </View>
-
+  const formEl = (
         <View style={{ gap: 14 }}>
           {mode === 'register' ? (
             <Field label="Adın" value={name} onChangeText={setName} placeholder="Örn. Mert" autoComplete="name" textContentType="givenName" />
@@ -136,6 +114,79 @@ export default function Giris() {
             ) : null}
           </View>
         </View>
+  );
+
+  if (isDesktop) {
+    return (
+      <View style={{ flex: 1, flexDirection: 'row', backgroundColor: colors.bg }}>
+        <View style={{ flex: 1, backgroundColor: colors.red, padding: 56, justifyContent: 'space-between', overflow: 'hidden' }}>
+          <View style={{ position: 'absolute', right: -160, top: -120, width: 520, height: 520, borderRadius: 260, borderWidth: 2, borderColor: 'rgba(255,255,255,0.18)' }} />
+          <View style={{ position: 'absolute', right: -90, top: -50, width: 380, height: 380, borderRadius: 190, borderWidth: 2, borderColor: 'rgba(255,255,255,0.18)' }} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' }}>
+              <T w="extrabold" size={19} color={colors.red}>
+                GG
+              </T>
+            </View>
+            <T w="extrabold" size={20} color={colors.white} style={{ lineHeight: 22 }}>
+              Genç{'\n'}Gönüllüler
+            </T>
+          </View>
+          <View style={{ gap: 18, maxWidth: 520 }}>
+            <T w="extrabold" size={52} color={colors.white} style={{ letterSpacing: -1.6, lineHeight: 58 }}>
+              Küçük adımlar,{'\n'}büyük etkiler.
+            </T>
+            <T size={18} color={colors.white} style={{ lineHeight: 27, opacity: 0.92 }}>
+              Tasarım, kod, fotoğraf ya da kelimeler: yeteneğinle 15–60 dakikalık görevler yap, dokunduğun hayatları gör.
+            </T>
+          </View>
+          <T w="semibold" size={13} color={colors.white} style={{ opacity: 0.8 }}>
+            Puan değil, insan sayıyoruz.
+          </T>
+        </View>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 40 }} keyboardShouldPersistTaps="handled">
+          <View style={{ width: '100%', maxWidth: 420, alignSelf: 'center', gap: 24 }}>
+            <View style={{ gap: 6 }}>
+              <T w="extrabold" size={28} style={{ letterSpacing: -0.8 }} accessibilityRole="header">
+                {mode === 'register' ? 'Hesap oluştur' : 'Tekrar hoş geldin'}
+              </T>
+              <T size={15} color={colors.muted}>
+                {mode === 'register' ? 'Birkaç saniyede aramıza katıl.' : 'Kaldığın yerden devam et.'}
+              </T>
+            </View>
+            {formEl}
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <Screen>
+        <View style={{ gap: 18, paddingTop: 28 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: colors.red, alignItems: 'center', justifyContent: 'center' }}>
+              <T w="extrabold" size={18} color={colors.white}>
+                GG
+              </T>
+            </View>
+            <T w="extrabold" size={20} style={{ lineHeight: 22 }}>
+              Genç{'\n'}Gönüllüler
+            </T>
+          </View>
+          <View style={{ gap: 8 }}>
+            <T w="extrabold" size={30} style={{ letterSpacing: -0.9, lineHeight: 36 }}>
+              Küçük adımlar,{'\n'}büyük etkiler.
+            </T>
+            <Squiggle />
+            <T size={15} color={colors.muted} style={{ lineHeight: 22 }}>
+              Tasarım, kod, fotoğraf ya da kelimeler: yeteneğinle 15–60 dakikalık görevler yap, dokunduğun hayatları gör.
+            </T>
+          </View>
+        </View>
+
+        {formEl}
       </Screen>
     </KeyboardAvoidingView>
   );

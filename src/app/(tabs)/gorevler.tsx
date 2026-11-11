@@ -5,7 +5,8 @@ import { useAppData } from '@/lib/app-data';
 import { CATEGORIES, type Category } from '@/lib/types';
 import { Icon } from '@/components/Icon';
 import { TaskCard } from '@/components/TaskCard';
-import { Chip, Empty, Screen, T } from '@/components/ui';
+import { Chip, Empty, Grid, Screen, T } from '@/components/ui';
+import { useLayout } from '@/lib/use-layout';
 import { colors, fonts, radius } from '@/theme';
 
 type Filter = 'hepsi' | 'bana-uygun' | Category;
@@ -17,6 +18,7 @@ export default function Gorevler() {
   const { tasks, tasksLoading, claimByTask, isMatch } = useAppData();
   const [filter, setFilter] = useState<Filter>('bana-uygun');
   const [q, setQ] = useState('');
+  const { isDesktop, isLarge } = useLayout();
   const [where, setWhere] = useState<'hepsi' | 'uzaktan' | 'yerinde'>('hepsi');
 
   useEffect(() => {
@@ -40,13 +42,13 @@ export default function Gorevler() {
   ];
 
   return (
-    <Screen>
+    <Screen wide>
       <View style={{ gap: 4 }}>
         <T w="semibold" size={13} color={colors.redDark}>
           Mikro görevler
         </T>
-        <T w="extrabold" size={26} style={{ letterSpacing: -0.8, lineHeight: 32 }} accessibilityRole="header">
-          Bildiğin işle{'\n'}fark yarat.
+        <T w="extrabold" size={isDesktop ? 34 : 26} style={{ letterSpacing: -0.8, lineHeight: isDesktop ? 40 : 32 }} accessibilityRole="header">
+          Bildiğin işle{isDesktop ? ' ' : '\n'}fark yarat.
         </T>
         <T size={14} color={colors.muted} style={{ marginTop: 4, lineHeight: 20 }}>
           Evden yapılan kısa işlerden sahadaki etkinliklere: yeteneğine uygun her şey.
@@ -58,6 +60,7 @@ export default function Gorevler() {
           flexDirection: 'row',
           alignItems: 'center',
           gap: 10,
+          maxWidth: isDesktop ? 560 : undefined,
           backgroundColor: colors.white,
           borderWidth: 1,
           borderColor: colors.border,
@@ -77,7 +80,12 @@ export default function Gorevler() {
         />
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 20 }} style={{ marginRight: -20, flexGrow: 0 }}>
+      <ScrollView
+        horizontal={!isDesktop}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={isDesktop ? { gap: 8, flexDirection: 'row', flexWrap: 'wrap' } : { gap: 8, paddingRight: 20 }}
+        style={isDesktop ? { flexGrow: 0 } : { marginRight: -20, flexGrow: 0 }}
+      >
         {filters.map((f) => (
           <Chip key={f.id} label={f.label} active={filter === f.id} onPress={() => setFilter(f.id)} />
         ))}
@@ -100,9 +108,11 @@ export default function Gorevler() {
       </T>
 
       <View style={{ gap: 12 }}>
-        {list.map((t) => (
-          <TaskCard key={t.id} task={t} matched={isMatch(t)} status={claimByTask[t.id]?.status} />
-        ))}
+        <Grid columns={isLarge ? 3 : isDesktop ? 2 : 1} gap={isDesktop ? 16 : 12}>
+          {list.map((t) => (
+            <TaskCard key={t.id} task={t} matched={isMatch(t)} status={claimByTask[t.id]?.status} />
+          ))}
+        </Grid>
         {!tasksLoading && !list.length ? (
           <Empty
             text={
