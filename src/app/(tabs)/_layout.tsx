@@ -30,6 +30,10 @@ export default function TabsLayout() {
         <NativeTabs.Trigger.Icon sf={{ default: 'person', selected: 'person.fill' }} md="person" />
         <NativeTabs.Trigger.Label>Profil</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="onizleme" contentStyle={{ backgroundColor: colors.bg }}>
+        <NativeTabs.Trigger.Icon sf={{ default: 'eye', selected: 'eye.fill' }} md="visibility" />
+        <NativeTabs.Trigger.Label>Önizleme</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }

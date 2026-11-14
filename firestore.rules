@@ -16,7 +16,13 @@ service cloud.firestore {
     }
 
     // Kullanıcı profilleri: sıralama için ad ve etki herkese açık.
-    // Kullanıcı yalnızca adını ve yeteneklerini değiştirebilir; etki ve rolü değiştiremez.
+    // Kullanıcı yalnızca adını, yeteneklerini ve profil fotoğrafını değiştirebilir; etki ve rolü değiştiremez.
+    function validPhoto() {
+      return !('photo' in request.resource.data)
+        || (request.resource.data.photo is string
+          && request.resource.data.photo.size() < 300000
+          && request.resource.data.photo.matches('^data:image/(jpeg|png|webp);base64,.*'));
+    }
     match /users/{uid} {
       allow read: if signedIn();
       allow create: if signedIn() && request.auth.uid == uid
@@ -26,7 +32,8 @@ service cloud.firestore {
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 60;
       allow update: if (signedIn() && request.auth.uid == uid
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'skills']))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'skills', 'photo'])
+          && validPhoto())
         || (isAdmin()
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['impactTotal', 'taskCount']));
       // Kullanıcı hesabını silebilir (App Store kuralı).

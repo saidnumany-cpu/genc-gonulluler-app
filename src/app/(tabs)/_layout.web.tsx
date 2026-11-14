@@ -7,12 +7,12 @@ import { useAuth } from '@/lib/auth-context';
 import { useLayout } from '@/lib/use-layout';
 import { colors, fonts, radius } from '@/theme';
 
-const ICONS: Record<string, IconName> = { index: 'home', gorevler: 'tasks', etki: 'heart', profil: 'user' };
+const ICONS: Record<string, IconName> = { index: 'home', gorevler: 'tasks', etki: 'heart', profil: 'user', onizleme: 'eye' };
 
 const tab = (title: string, icon: IconName) => ({
   title,
   tabBarIcon: ({ focused }: { focused: boolean }) => (
-    <Icon name={icon} size={22} color={focused ? colors.red : colors.muted} filled={focused && icon !== 'tasks'} strokeWidth={focused ? 2.1 : 1.8} />
+    <Icon name={icon} size={22} color={focused ? colors.red : colors.muted} filled={focused && icon !== 'tasks' && icon !== 'eye'} strokeWidth={focused ? 2.1 : 1.8} />
   ),
 });
 
@@ -74,7 +74,7 @@ function Sidebar({ state, descriptors, navigateToTab }: SidebarProps) {
                 };
               }}
             >
-              <Icon name={icon} size={20} color={focused ? colors.red : colors.muted} filled={focused && icon !== 'tasks'} strokeWidth={focused ? 2.1 : 1.8} />
+              <Icon name={icon} size={20} color={focused ? colors.red : colors.muted} filled={focused && icon !== 'tasks' && icon !== 'eye'} strokeWidth={focused ? 2.1 : 1.8} />
               <T w={focused ? 'extrabold' : 'semibold'} size={15} color={focused ? colors.redDark : colors.text}>
                 {descriptors[route.key]?.options.title ?? route.name}
               </T>
@@ -87,7 +87,7 @@ function Sidebar({ state, descriptors, navigateToTab }: SidebarProps) {
 
       {profile ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: radius.md, backgroundColor: colors.bg }}>
-          <Avatar name={profile.name} size={36} />
+          <Avatar name={profile.name} size={36} photo={profile.photo} />
           <View style={{ flex: 1, minWidth: 0 }}>
             <T w="bold" size={14} numberOfLines={1}>
               {profile.name}
@@ -121,6 +121,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="gorevler" options={tab('Görevler', 'tasks')} />
       <Tabs.Screen name="etki" options={tab('Etkim', 'heart')} />
       <Tabs.Screen name="profil" options={tab('Profil', 'user')} />
+      <Tabs.Screen name="onizleme" options={tab('Önizleme', 'eye')} />
     </Tabs>
   );
 }

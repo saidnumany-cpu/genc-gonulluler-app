@@ -193,6 +193,8 @@ export interface UserProfile {
   skills: string[];
   impactTotal: number;
   taskCount: number;
+  /** Küçültülmüş profil fotoğrafı (data:image/jpeg;base64,…). */
+  photo?: string;
   role?: 'admin';
   createdAt?: Timestamp;
 }

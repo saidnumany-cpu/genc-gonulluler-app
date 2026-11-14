@@ -3,6 +3,7 @@ import {
   addDoc,
   collection,
   deleteDoc,
+  deleteField,
   doc,
   increment,
   limit,
@@ -88,6 +89,11 @@ export async function createProfile(uid: string, name: string) {
 
 export async function updateSkills(uid: string, skills: string[]) {
   await updateDoc(doc(db, 'users', uid), { skills });
+}
+
+/** Profil fotoğrafını kaydeder; `null` verilirse fotoğrafı kaldırır. */
+export async function updatePhoto(uid: string, photo: string | null) {
+  await updateDoc(doc(db, 'users', uid), { photo: photo ?? deleteField() });
 }
 
 /** Hesabı ve kullanıcıya ait tüm verileri siler. */
