@@ -2,6 +2,7 @@ import { Children, type ReactNode } from 'react';
 import { useLayout } from '@/lib/use-layout';
 import {
   ActivityIndicator,
+  Platform,
   Image,
   Pressable,
   ScrollView,
@@ -18,6 +19,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Polygon } from 'react-native-svg';
 import { colors, fonts, radius } from '@/theme';
+import { Glass } from './Glass';
 import { Icon, type IconName } from './Icon';
 
 type Weight = keyof typeof fonts;
@@ -50,11 +52,15 @@ export function Screen({
   const insets = useSafeAreaInsets();
   const { isDesktop } = useLayout();
   const width = maxWidth ?? (isDesktop ? (wide ? 1120 : 760) : 560);
+  // iOS'ta güvenli alanı (çentik + Liquid Glass sekme çubuğu) sistem ekler; böylece
+  // içerik camın altından akar ama son öğe çubuğun arkasında kalmaz.
+  const ios = Platform.OS === 'ios';
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: colors.bg }}
+      contentInsetAdjustmentBehavior={ios ? 'automatic' : undefined}
       contentContainerStyle={{
-        paddingTop: padTop ? insets.top + (isDesktop ? 40 : 16) : 0,
+        paddingTop: padTop ? (ios ? 0 : insets.top) + (isDesktop ? 40 : 16) : 0,
         paddingBottom: isDesktop ? 56 : 32,
         paddingHorizontal: padTop ? (isDesktop ? 40 : 20) : 0,
         gap: isDesktop ? 24 : 20,
@@ -200,13 +206,20 @@ export function Pill({ label, tone = 'soft' }: { label: string; tone?: 'soft' | 
     glass: ['rgba(255,255,255,0.2)', colors.white],
   } as const;
   const [bg, fg] = map[tone];
-  return (
-    <View style={{ backgroundColor: bg, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, alignSelf: 'flex-start' }}>
-      <T w="bold" size={12} color={fg}>
-        {label}
-      </T>
-    </View>
+  const box = { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, alignSelf: 'flex-start' } as const;
+  const text = (
+    <T w="bold" size={12} color={fg}>
+      {label}
+    </T>
   );
+  if (tone === 'glass') {
+    return (
+      <Glass variant="clear" colorScheme="dark" fallbackColor={bg} style={box}>
+        {text}
+      </Glass>
+    );
+  }
+  return <View style={[box, { backgroundColor: bg }]}>{text}</View>;
 }
 
 export function SectionHeader({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {

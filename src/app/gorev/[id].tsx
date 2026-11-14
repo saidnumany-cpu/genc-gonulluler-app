@@ -7,6 +7,7 @@ import { useAppData } from '@/lib/app-data';
 import { claimTask, submitTask, unclaimTask } from '@/lib/data';
 import { formatNumber } from '@/lib/impact';
 import { categoryLabel } from '@/lib/types';
+import { Glass, useLiquidGlass } from '@/components/Glass';
 import { Icon } from '@/components/Icon';
 import { Button, Card, Empty, Field, Pill, T } from '@/components/ui';
 import { useLayout } from '@/lib/use-layout';
@@ -26,6 +27,7 @@ export default function GorevDetay() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const { isDesktop } = useLayout();
+  const glass = useLiquidGlass();
   const contentWidth = isDesktop ? 760 : 560;
   const { profile } = useAuth();
   const { tasks, claimByTask, isMatch } = useAppData();
@@ -65,7 +67,7 @@ export default function GorevDetay() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ paddingBottom: glass ? insets.bottom + 110 : 24 }} keyboardShouldPersistTaps="handled">
         <View
           style={{
             backgroundColor: colors.red,
@@ -80,13 +82,16 @@ export default function GorevDetay() {
         >
           <View style={{ position: 'absolute', right: -90, bottom: -110, width: 260, height: 260, borderRadius: 130, borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)' }} />
           <View style={{ gap: 14, width: '100%', maxWidth: contentWidth, alignSelf: 'center' }}>
-          <Pressable
-            onPress={back}
-            accessibilityRole="button"
-            accessibilityLabel="Geri"
-            style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}
-          >
-            <Icon name="back" size={20} color={colors.white} strokeWidth={2.2} />
+          <Pressable onPress={back} accessibilityRole="button" accessibilityLabel="Geri" style={{ alignSelf: 'flex-start' }}>
+            <Glass
+              variant="clear"
+              colorScheme="dark"
+              interactive
+              fallbackColor="rgba(255,255,255,0.18)"
+              style={{ width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Icon name="back" size={20} color={colors.white} strokeWidth={2.2} />
+            </Glass>
           </Pressable>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <Pill label={categoryLabel(task.category)} tone="white" />
@@ -240,7 +245,14 @@ export default function GorevDetay() {
       </ScrollView>
 
       {!status || status === 'claimed' ? (
-        <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: insets.bottom + 14, backgroundColor: colors.white, borderTopWidth: 1, borderTopColor: colors.border }}>
+        <Glass
+          fallbackColor={colors.white}
+          style={
+            glass
+              ? { position: 'absolute', left: 14, right: 14, bottom: insets.bottom + 6, padding: 8, borderRadius: 36 }
+              : { paddingHorizontal: 20, paddingTop: 12, paddingBottom: insets.bottom + 14, borderTopWidth: 1, borderTopColor: colors.border }
+          }
+        >
           <View style={{ width: '100%', maxWidth: contentWidth, alignSelf: 'center', alignItems: isDesktop ? 'flex-end' : 'stretch' }}>
             {!status ? (
               <Button label="Görevi üstlen" icon="arrow" loading={busy} onPress={() => run(() => claimTask(profile, task))} style={isDesktop ? { minWidth: 260 } : undefined} />
@@ -248,7 +260,7 @@ export default function GorevDetay() {
               <Button label="Vazgeç" variant="outline" loading={busy} onPress={() => run(() => unclaimTask(profile.uid, task.id))} style={isDesktop ? { minWidth: 260 } : undefined} />
             )}
           </View>
-        </View>
+        </Glass>
       ) : null}
     </KeyboardAvoidingView>
   );
