@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { deleteUser, signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth-context';
 import { useAppData } from '@/lib/app-data';
-import { deleteAccount, updateSkills, useLeaderboard } from '@/lib/data';
+import { deleteAccount, updatePhoto, updateSkills, useLeaderboard } from '@/lib/data';
+import { PhotoPermissionError, pickProfilePhoto, type PhotoSource } from '@/lib/profile-photo';
+import { Icon } from '@/components/Icon';
 import { computeBadges, formatNumber, summarize } from '@/lib/impact';
 import { CATEGORIES, SKILL_TAGS } from '@/lib/types';
 import { Avatar, Button, Card, Chip, HexBadge, Screen, T } from '@/components/ui';
@@ -35,6 +37,9 @@ export default function Profil() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const [photoMenu, setPhotoMenu] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState('');
 
   useEffect(() => setSkills(profile?.skills ?? []), [profile?.skills]);
 
@@ -50,6 +55,39 @@ export default function Profil() {
     } catch {
       setSkills(profile!.skills);
       setSaveError('Kaydedilemedi, tekrar dene.');
+    }
+  }
+
+  async function changePhoto(source: PhotoSource) {
+    setPhotoError('');
+    setPhotoBusy(true);
+    try {
+      const photo = await pickProfilePhoto(source);
+      if (photo) {
+        await updatePhoto(profile!.uid, photo);
+        setPhotoMenu(false);
+      }
+    } catch (e) {
+      setPhotoError(
+        e instanceof PhotoPermissionError
+          ? 'Kamera izni verilmedi. Ayarlar > Genç Gönüllüler bölümünden izin verebilirsin.'
+          : 'Fotoğraf kaydedilemedi, tekrar dene.',
+      );
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
+
+  async function removePhoto() {
+    setPhotoError('');
+    setPhotoBusy(true);
+    try {
+      await updatePhoto(profile!.uid, null);
+      setPhotoMenu(false);
+    } catch {
+      setPhotoError('Fotoğraf kaldırılamadı, tekrar dene.');
+    } finally {
+      setPhotoBusy(false);
     }
   }
 
@@ -74,9 +112,50 @@ export default function Profil() {
   return (
     <Screen>
       <View style={{ alignItems: 'center', gap: 10 }}>
-        <View style={{ padding: 4, borderRadius: 99, borderWidth: 2, borderColor: colors.red }}>
-          <Avatar name={profile.name} size={84} />
-        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={profile.photo ? 'Profil fotoğrafını değiştir' : 'Profil fotoğrafı ekle'}
+          onPress={() => setPhotoMenu(!photoMenu)}
+          style={({ pressed }) => ({ padding: 4, borderRadius: 99, borderWidth: 2, borderColor: colors.red, opacity: pressed || photoBusy ? 0.7 : 1 })}
+        >
+          <Avatar name={profile.name} size={84} photo={profile.photo} />
+          <View
+            style={{
+              position: 'absolute',
+              right: -2,
+              bottom: -2,
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: colors.red,
+              borderWidth: 3,
+              borderColor: colors.bg,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Icon name={profile.photo ? 'camera' : 'plus'} size={14} color={colors.white} strokeWidth={2.4} />
+          </View>
+        </Pressable>
+        {photoMenu ? (
+          <View style={{ width: '100%', maxWidth: 360, gap: 8, padding: 12, borderRadius: radius.lg, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }}>
+            <T w="extrabold" size={14} style={{ textAlign: 'center' }}>
+              Profil fotoğrafı
+            </T>
+            <Button label="Galeriden seç" icon="plus" variant="outline" loading={photoBusy} onPress={() => changePhoto('library')} style={{ height: 46 }} />
+            {Platform.OS !== 'web' ? (
+              <Button label="Fotoğraf çek" icon="camera" variant="outline" disabled={photoBusy} onPress={() => changePhoto('camera')} style={{ height: 46 }} />
+            ) : null}
+            {profile.photo ? (
+              <Button label="Fotoğrafı kaldır" variant="ghost" disabled={photoBusy} onPress={removePhoto} style={{ height: 42 }} />
+            ) : null}
+            {photoError ? (
+              <T w="semibold" size={13} color={colors.redDark} style={{ textAlign: 'center' }}>
+                {photoError}
+              </T>
+            ) : null}
+          </View>
+        ) : null}
         <T w="extrabold" size={22} style={{ letterSpacing: -0.4 }}>
           {profile.name}
         </T>
@@ -178,7 +257,7 @@ export default function Profil() {
               <T w="extrabold" size={13} color={colors.muted} style={{ width: 18 }}>
                 {i + 1}
               </T>
-              <Avatar name={u.name} size={32} />
+              <Avatar name={u.name} size={32} photo={u.photo} />
               <T w="bold" size={14} style={{ flex: 1 }} numberOfLines={1}>
                 {me ? 'Sen' : u.name}
               </T>

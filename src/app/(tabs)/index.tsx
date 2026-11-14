@@ -195,7 +195,7 @@ export default function AnaSayfa() {
     <Screen wide>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-          <Avatar name={profile?.name ?? '?'} />
+          <Avatar name={profile?.name ?? '?'} photo={profile?.photo} />
           <View>
             <T size={13} color={colors.muted}>
               Merhaba,

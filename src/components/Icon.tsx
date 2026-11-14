@@ -4,7 +4,7 @@ import Svg, { Circle, Path, Rect } from 'react-native-svg';
 export type IconName =
   | 'home' | 'tasks' | 'heart' | 'user' | 'bell' | 'arrow' | 'back' | 'clock' | 'laptop' | 'search'
   | 'pen' | 'code' | 'camera' | 'chat' | 'star' | 'leaf' | 'bolt' | 'check' | 'share' | 'link' | 'logout' | 'shield' | 'plus'
-  | 'book' | 'medkit' | 'users' | 'pin' | 'music' | 'briefcase' | 'globe';
+  | 'book' | 'medkit' | 'users' | 'pin' | 'music' | 'briefcase' | 'globe' | 'eye';
 
 interface Props {
   name: IconName;
@@ -110,6 +110,12 @@ export function Icon({ name, size = 22, color, filled = false, strokeWidth = 1.9
         <>
           <Circle {...s} cx={12} cy={12} r={9.5} />
           <Path {...s} d="M2.5 12h19M12 2.5c2.5 2.6 3.8 5.8 3.8 9.5s-1.3 6.9-3.8 9.5c-2.5-2.6-3.8-5.8-3.8-9.5s1.3-6.9 3.8-9.5z" />
+        </>
+      )}
+      {name === 'eye' && (
+        <>
+          <Path {...s} d="M1.5 12S5.5 4.5 12 4.5 22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12z" />
+          <Circle {...(filled ? f : s)} cx={12} cy={12} r={3.2} />
         </>
       )}
     </Svg>
