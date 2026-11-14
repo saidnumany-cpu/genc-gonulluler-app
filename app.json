@@ -13,7 +13,8 @@
       "supportsTablet": false,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "appleTeamId": "Q78CGF442C"
     },
     "android": {
       "package": "com.gencgonulluler.app",
