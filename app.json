@@ -33,6 +33,14 @@
     "plugins": [
       "expo-router",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "Profil fotoğrafını seçebilmen için fotoğraflarına erişmemiz gerekiyor.",
+          "cameraPermission": "Profil fotoğrafı çekebilmen için kameraya erişmemiz gerekiyor.",
+          "microphonePermission": false
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#FFFFFF",

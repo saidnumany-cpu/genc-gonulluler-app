@@ -2,6 +2,7 @@ import { Children, type ReactNode } from 'react';
 import { useLayout } from '@/lib/use-layout';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -299,7 +300,16 @@ export function Ring({ value, label, progress, size = 120 }: { value: string; la
   );
 }
 
-export function Avatar({ name, size = 44, dark = true }: { name: string; size?: number; dark?: boolean }) {
+export function Avatar({ name, size = 44, dark = true, photo }: { name: string; size?: number; dark?: boolean; photo?: string | null }) {
+  if (photo) {
+    return (
+      <Image
+        source={{ uri: photo }}
+        accessibilityLabel={`${name} profil fotoğrafı`}
+        style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: colors.border }}
+      />
+    );
+  }
   return (
     <View
       style={{
