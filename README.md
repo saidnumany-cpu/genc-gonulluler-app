@@ -118,16 +118,50 @@ Testçiler App Store'dan ücretsiz **TestFlight** uygulamasını indirip davetle
 
 ---
 
+## 5. Xcode ile kendi iPhone'una yükleme (Mac gerekir, ücretsiz Apple ID yeter)
+
+Uygulama iOS 26'nın **Liquid Glass** tasarımını kullanır: alt sekme çubuğu sistemin yerel cam çubuğudur (kaydırınca küçülür), görev detayındaki geri düğmesi, "Senin için eşleştirdik" etiketi ve alttaki "Görevi üstlen" çubuğu cam yüzeydir. Cam efekti yalnızca **Xcode 26 veya üstüyle derlenip iOS 26+ çalışan iPhone'da** görünür; eski iOS'ta, Android'de ve web'de aynı öğeler düz renkle çizilir. "Saydamlığı Azalt" erişilebilirlik ayarı açıksa da düz renge döner.
+
+**Bir kerelik hazırlık**
+
+1. App Store'dan **Xcode 26+** kurun, bir kez açıp ek bileşenleri yükleyin. *Xcode → Settings → Accounts* bölümünden Apple ID'nizi ekleyin.
+2. CocoaPods kurun: `brew install cocoapods`
+3. iPhone'u kabloyla Mac'e bağlayın, "Bu bilgisayara güven" deyin. iPhone'da **Ayarlar → Gizlilik ve Güvenlik → Geliştirici Modu**'nu açın (telefon yeniden başlar).
+
+**Derleme**
+
+```bash
+git clone https://github.com/saidnumany-cpu/genc-gonulluler-app.git
+cd genc-gonulluler-app
+npm install
+npm run ios:xcode        # ios/ klasörünü üretir, pod'ları kurar ve Xcode'u açar
+```
+
+Xcode'da:
+
+1. Soldan **GencGonulluler** projesini → **Signing & Capabilities** sekmesini açın.
+2. **Team** olarak Apple ID'nizi (Personal Team) seçin. "Bundle identifier kullanılamıyor" hatası çıkarsa `app.json` içindeki `bundleIdentifier`'ı benzersiz yapın (örn. `com.saidnumany.gencgonulluler`) ve `npm run ios:xcode` komutunu tekrar çalıştırın.
+3. Üstteki şemadan **Product → Scheme → Edit Scheme → Run → Build Configuration: Release** seçin. Release derlemesi JavaScript'i uygulamanın içine gömer, bilgisayar kapalıyken de çalışır. Firebase değerleri `.env.production` dosyasından otomatik alınır.
+4. Cihaz olarak iPhone'unuzu seçip **▶︎ Run** (⌘R) deyin.
+5. İlk açılışta iPhone "güvenilmeyen geliştirici" derse: **Ayarlar → Genel → VPN ve Aygıt Yönetimi** → Apple ID'niz → **Güven**.
+
+Xcode'u açmadan tek komutla da yükleyebilirsiniz: `npm run ios:iphone` (imzalama ekibini bir kez Xcode'da seçtikten sonra).
+
+- Ücretsiz Apple ID ile yüklenen uygulama **7 gün** sonra açılmaz olur; tekrar ⌘R ile yüklemeniz yeterli (veriler Firebase'de durduğu için kaybolmaz). Ücretli üyelikte bu süre 1 yıldır.
+- `ios/` klasörü otomatik üretilir ve git'e eklenmez. Ayarları `app.json` üzerinden değiştirip `npm run ios:xcode` ile yeniden üretin; `ios/` içini elle düzenlemeyin.
+
+---
+
 ## Proje yapısı
 
 ```
 src/app/             Ekranlar (Expo Router: her dosya bir sayfa)
   giris.tsx          Giriş / kayıt
   yetenekler.tsx     İlk açılışta yetenek seçimi
-  (tabs)/            Ana Sayfa, Görevler, Etkim, Profil
+  (tabs)/            Ana Sayfa, Görevler, Etkim, Profil (iOS/Android: yerel Liquid Glass sekme çubuğu, web: _layout.web.tsx)
   gorev/[id].tsx     Görev detayı ve teslim
   yonetim.tsx        Kurum paneli
-src/components/      Ortak arayüz parçaları (kart, düğme, rozet, ikonlar)
+src/components/      Ortak arayüz parçaları (kart, düğme, rozet, ikonlar, Glass.tsx = Liquid Glass yüzeyi)
 src/lib/             Firebase, veri işlemleri, etki hesapları, örnek görevler
 src/theme.ts         Renkler ve yazı tipleri
 firestore.rules      Veritabanı güvenlik kuralları
